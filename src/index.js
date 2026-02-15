@@ -1,3 +1,5 @@
+import { isSolvable} from "./features/solvability";
+
 const START = [0,7,8, 4,5,6, 1,2,3];  // Початковий стан
 const GOAL = [1,2,3, 4,5,6, 7,8,0];    // Цільовий стан
 const MOVES = ['↓1', '←2', '→3', '↑4']; // Порядок ходів згідно завдання
@@ -84,6 +86,15 @@ function generateSuccessors(board, depth) {
 }
 
 // основна робота програми
+
+// перевірка розв'язності
+if (!isSolvable(START)) {
+  console.log("Початкова конфігурація нерозв'язна (непарна кількість інверсій).");
+} else {
+  console.log("Початкова конфігурація розв'язна. Запускаємо пошук...\n");
+  runManualSearch();
+  runFullBFS();
+}
 
 // ручний пошук до 3 рівня деерва
 console.log("Ручний пошук\n");
