@@ -1,3 +1,5 @@
+import { isSolvable} from "./features/solvability";
+
 const START = [0,7,8, 4,5,6, 1,2,3];  // Початковий стан
 const GOAL = [1,2,3, 4,5,6, 7,8,0];    // Цільовий стан
 const MOVES = ['↓1', '←2', '→3', '↑4']; // Порядок ходів згідно завдання
@@ -85,6 +87,15 @@ function generateSuccessors(board, depth) {
 
 // основна робота програми
 
+// перевірка розв'язності
+if (!isSolvable(START)) {
+  console.log("Початкова конфігурація нерозв'язна (непарна кількість інверсій).");
+} else {
+  console.log("Початкова конфігурація розв'язна. Запускаємо пошук...\n");
+  runManualSearch();
+  runFullBFS();
+}
+
 // ручний пошук до 3 рівня деерва
 console.log("Ручний пошук\n");
 
@@ -149,20 +160,20 @@ function runFullBFS() {
     // Ініціалізація черги та множини відвіданих
     let queue = [{board: [...START], depth: 0, path: []}];
     let visitedSet = new Set([START.join(',')]);  // база відвіданих станів
-    let stats = {generated: 0, visited: 1, rejected: 0};
+    let steps = {generated: 0, visited: 1, rejected: 0};
     
     console.log("Запуск повного BFS");
     
     // Головний цикл BFS (поки черга не порожня)
-    while(queue.length > 0 && stats.generated < 20) {
+    while(queue.length > 0 && steps.generated < 20) {
         let curr = queue.shift();  // витягуємо перший елемент черги (FIFO)
-        stats.generated++;         // рахуємо згенеровані стани
+        steps.generated++;         // рахуємо згенеровані стани
         
-        console.log(`\nКрок ${stats.generated}:`);
+        console.log(`\nКрок ${steps.generated}:`);
         printBoard(curr.board, `Глибина ${curr.depth}`);
         
         // перша умова завершення: знайдено цільовий стан
-        if(JSON.stringify(curr.board) === JSON.stringify(GOAL)) {
+        if (JSON.stringify(curr.board) === JSON.stringify(GOAL)) {
             console.log(`Рішення на глибині ${curr.depth}!`);
             console.log("Шлях:", curr.path.join(' → ') || 'прямо');
             return;  // завершення алгоритму
@@ -171,30 +182,30 @@ function runFullBFS() {
         // Генеруємо сусідів і додаємо в чергу
         let successors = generateSuccessors(curr.board, curr.depth);
         visitedSet.add(curr.board.join(','));  // додаємо в базу
-        stats.visited++;
+        steps.visited++;
         
         successors.forEach(succ => {
             let key = succ.board.join(',');
             if(!visitedSet.has(key)) {  // новий стан
                 queue.push({...succ, path: [...curr.path, succ.move]});
             } else {  // повторний стан
-                stats.rejected++;
+                steps.rejected++;
             }
         });
         
         console.log(`Додано в чергу: ${successors.length}`);
-        console.log(`Статистика: ${stats.generated}/${stats.visited}/${stats.rejected}`);
+        console.log(`Статистика: ${steps.generated}/${steps.visited}/${steps.rejected}`);
     }
     
     // друга умова завершення: вичерпано всі можливі стани
-    if(stats.generated >= 50) {
+    if(steps.generated >= 50) {
         console.log("\nОбмежено 50 кроками");
         console.log("Розв'язку не існує (різні парності)");
     }
     
     console.log("\nСтатистика");
-    console.log(`Згенеровано: ${stats.generated}`);
-    console.log(`База станів: ${stats.visited}`);
-    console.log(`Відкинуто: ${stats.rejected}`);
+    console.log(`Згенеровано: ${steps.generated}`);
+    console.log(`База станів: ${steps.visited}`);
+    console.log(`Відкинуто: ${steps.rejected}`);
     console.log("Глибина розв'язку: неможливо (парність)");
 }
